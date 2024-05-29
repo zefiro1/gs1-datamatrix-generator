@@ -41,7 +41,7 @@ Haz clic en el botón "Generate" para generar y visualizar el código Data Matri
 Haz clic en el botón "Download" para guardar el código Data Matrix en tu equipo.
 
 Aplicación:
-![Gui]([https://imgur.com/a/S2B6rXf](https://imgur.com/oMYNcbi) "Imagen de la gui")
-![Alt text](https://imgur.com/oMYNcbi "a title")
+![Gui](/generador_datamatrix.png) "Imagen de la gui")
+
 
 
