@@ -43,7 +43,7 @@ Haz clic en el botón "Download" para guardar el código Data Matrix en tu equip
 Aplicación:
 
 
-![Gui](/generador_datamatrix.png) "Imagen de la gui")
+![Gui](/generador_datamatrix.png)
 
 
 
