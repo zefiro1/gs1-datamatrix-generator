@@ -15,7 +15,7 @@ def format_gs1_data(pc, sn, lote, cad, nhrn):
         "SN": "21",    # Serial Number
         "LOTE": "10",  # Batch/Lot Number
         "CAD": "17",   # Expiration Date
-        "NHRN": "712" # NHRN
+        "NHRN": "712"  # NHRN
     }
     
     formatted_data = ""
@@ -30,13 +30,17 @@ def format_gs1_data(pc, sn, lote, cad, nhrn):
     
     for prefix, data in ordered_data:
         if data:
-            if prefix != "LOTE" and prefix != "SN":
+            if prefix not in ["LOTE", "SN"]:
                 formatted_data += GS
             formatted_data += prefix_map[prefix] + data
     
     if formatted_data.startswith(GS):
         formatted_data = formatted_data[1:]
     
+    return formatted_data
+
+def format_ppn_data(pc, lote, cad, sn):
+    formatted_data = f"[)>069N{pc}1T{lote}D{cad}S{sn}"
     return formatted_data
 
 def generate_gs1_datamatrix(data):
@@ -52,7 +56,10 @@ def generate_and_display():
     # Formatear la fecha de expiración
     cad = re.sub(r'(\d{2})/(\d{2})/(\d{2})', r'\3\2\1', cad)
     
-    formatted_data = format_gs1_data(pc, sn, lote, cad, nhrn)
+    if code_type.get() == "GS1":
+        formatted_data = format_gs1_data(pc, sn, lote, cad, nhrn)
+    else:  # PPN
+        formatted_data = format_ppn_data(pc, lote, cad, sn)
     
     # Generar el DataMatrix
     dm = generate_gs1_datamatrix(formatted_data)
@@ -84,7 +91,10 @@ def download_datamatrix():
     # Formatear la fecha de expiración
     cad = re.sub(r'(\d{2})/(\d{2})/(\d{2})', r'\3\2\1', cad)
     
-    formatted_data = format_gs1_data(pc, sn, lote, cad, nhrn)
+    if code_type.get() == "GS1":
+        formatted_data = format_gs1_data(pc, sn, lote, cad, nhrn)
+    else:  # PPN
+        formatted_data = format_ppn_data(pc, lote, cad, sn)
     
     # Generar el DataMatrix
     dm = generate_gs1_datamatrix(formatted_data)
@@ -96,46 +106,51 @@ def download_datamatrix():
     if file_path:
         dm.save(file_path, scale=5, border=2)
 
-
-
 # Crear la ventana principal
 root = tk.Tk()
-root.title("Generador GS1 Data Matrix")
+root.title("Generador GS1/PPN Data Matrix")
+
+code_type_label = ttk.Label(root, text="Code Type:")
+code_type_label.grid(row=0, column=0, sticky="w")
+code_type = ttk.Combobox(root, values=["GS1", "PPN"])
+code_type.grid(row=0, column=1)
+code_type.current(0)
 
 # Crear y colocar los widgets
 pc_label = ttk.Label(root, text="Product Code (PC):")
-pc_label.grid(row=0, column=0, sticky="w")
+pc_label.grid(row=1, column=0, sticky="w")
 pc_entry = ttk.Entry(root)
-pc_entry.grid(row=0, column=1)
+pc_entry.grid(row=1, column=1)
 
 sn_label = ttk.Label(root, text="Serial Number (SN):")
-sn_label.grid(row=1, column=0, sticky="w")
+sn_label.grid(row=2, column=0, sticky="w")
 sn_entry = ttk.Entry(root)
-sn_entry.grid(row=1, column=1)
+sn_entry.grid(row=2, column=1)
 
 lote_label = ttk.Label(root, text="Lote (Batch):")
-lote_label.grid(row=2, column=0, sticky="w")
+lote_label.grid(row=3, column=0, sticky="w")
 lote_entry = ttk.Entry(root)
-lote_entry.grid(row=2, column=1)
+lote_entry.grid(row=3, column=1)
 
 cad_label = ttk.Label(root, text="Exp Date (CAD):")
-cad_label.grid(row=3, column=0, sticky="w")
+cad_label.grid(row=4, column=0, sticky="w")
 cad_entry = ttk.Entry(root)
-cad_entry.grid(row=3, column=1)
+cad_entry.grid(row=4, column=1)
 
 nhrn_label = ttk.Label(root, text="National Code (NHRN):")
-nhrn_label.grid(row=4, column=0, sticky="w")
+nhrn_label.grid(row=5, column=0, sticky="w")
 nhrn_entry = ttk.Entry(root)
-nhrn_entry.grid(row=4, column=1)
+nhrn_entry.grid(row=5, column=1)
 
 generate_button = ttk.Button(root, text="Generate", command=generate_and_display)
-generate_button.grid(row=5, column=0, columnspan=4, pady=10)
+generate_button.grid(row=7, column=0, columnspan=4, pady=10)
 
 download_button = ttk.Button(root, text="Download", command=download_datamatrix)
-download_button.grid(row=6, column=0, columnspan=2, pady=10)
+download_button.grid(row=8, column=0, columnspan=2, pady=10)
 
 # Etiqueta para mostrar la imagen
 image_label = ttk.Label(root)
-image_label.grid(row=7, column=0, columnspan=2)
+image_label.grid(row=9, column=0, columnspan=2)
 
 root.mainloop()
+
