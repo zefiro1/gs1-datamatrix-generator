@@ -5,7 +5,7 @@ import segno
 import tempfile
 import os
 import re
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 
 GS = '\x1d'
 
@@ -56,8 +56,14 @@ def format_ppn_data(pc, lote, cad, sn):
 def generate_gs1_datamatrix(data):
     return segno.make(data)
 
+# Función para invertir la imagen
+def invert_image(image_path):
+    img = Image.open(image_path)
+    inverted_image = ImageOps.invert(img.convert("L")).convert("1")
+    return inverted_image
+
 # Función para generar y mostrar el DataMatrix
-def generate_and_display_data_matrix(pc, sn, lote, cad, nhrn, code_type, image_label):
+def generate_and_display_data_matrix(pc, sn, lote, cad, nhrn, code_type, image_label, inverted):
     # Formatear la fecha de expiración
     cad = re.sub(r'(\d{2})/(\d{2})/(\d{2})', r'\3\2\1', cad)
     
@@ -73,9 +79,13 @@ def generate_and_display_data_matrix(pc, sn, lote, cad, nhrn, code_type, image_l
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
         filename = temp_file.name
         dm.save(temp_file)
-
+    
+    if inverted:
+        img = invert_image(filename)
+    else:
+        img = Image.open(filename)
+    
     # Redimensionar la imagen a 200x200
-    img = Image.open(filename)
     img_resized = img.resize((200, 200), Image.ANTIALIAS)
 
     # Mostrar la imagen en la GUI
@@ -126,6 +136,12 @@ class DataMatrixApp:
         self.nhrn_entry = ttk.Entry(self.root)
         self.nhrn_entry.grid(row=5, column=1)
 
+        inverted_label = ttk.Label(self.root, text="Invert Data Matrix:")
+        inverted_label.grid(row=6, column=0, sticky="w")
+        self.inverted_var = tk.BooleanVar()
+        inverted_checkbox = ttk.Checkbutton(self.root, variable=self.inverted_var)
+        inverted_checkbox.grid(row=6, column=1, sticky="w")
+
         generate_button = ttk.Button(self.root, text="Generate", command=self.generate_and_display)
         generate_button.grid(row=7, column=0, columnspan=4, pady=10)
 
@@ -141,8 +157,9 @@ class DataMatrixApp:
         lote = self.lote_entry.get()
         cad = self.cad_entry.get()
         nhrn = self.nhrn_entry.get()
+        inverted = self.inverted_var.get()
         
-        generate_and_display_data_matrix(pc, sn, lote, cad, nhrn, self.code_type.get(), self.image_label)
+        generate_and_display_data_matrix(pc, sn, lote, cad, nhrn, self.code_type.get(), self.image_label, inverted)
         
     def download_datamatrix(self):
         pc = self.pc_entry.get()
@@ -150,6 +167,7 @@ class DataMatrixApp:
         lote = self.lote_entry.get()
         cad = self.cad_entry.get()
         nhrn = self.nhrn_entry.get()
+        inverted = self.inverted_var.get()
         
         # Formatear la fecha de expiración
         cad = re.sub(r'(\d{2})/(\d{2})/(\d{2})', r'\3\2\1', cad)
@@ -162,12 +180,25 @@ class DataMatrixApp:
         # Generar el DataMatrix
         dm = generate_gs1_datamatrix(formatted_data)
         
+        # Guardar el DataMatrix en un archivo temporal
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            filename = temp_file.name
+            dm.save(temp_file)
+
+        if inverted:
+            img = invert_image(filename)
+        else:
+            img = Image.open(filename)
+        
         # Abrir el cuadro de diálogo para seleccionar la ubicación de guardado
         file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
         
         # Guardar el DataMatrix en la ubicación seleccionada
         if file_path:
-            dm.save(file_path, scale=5, border=2)
+            img.save(file_path, format="PNG", dpi=(300, 300))
+
+        # Eliminar el archivo temporal
+        os.remove(filename)
 
 # Crear la ventana principal
 root = tk.Tk()
