@@ -101,56 +101,76 @@ class DataMatrixApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Generador GS1/PPN Data Matrix")
+        self.root.geometry("400x600")
+        
+        self.always_on_top_var = tk.BooleanVar(value=True)  # Variable para el checkbox
+        self.root.attributes("-topmost", self.always_on_top_var.get())
         
         self.create_widgets()
         
     def create_widgets(self):
-        code_type_label = ttk.Label(self.root, text="Code Type:")
-        code_type_label.grid(row=0, column=0, sticky="w")
-        self.code_type = ttk.Combobox(self.root, values=["GS1", "PPN"])
+        # Crear un frame principal
+        main_frame = ttk.Frame(self.root)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Crear un frame para los controles
+        control_frame = ttk.Frame(main_frame)
+        control_frame.pack(pady=(0, 20))
+        
+        # Etiqueta y combobox para el tipo de código
+        code_type_label = ttk.Label(control_frame, text="Code Type:")
+        code_type_label.grid(row=0, column=0, padx=(0, 10), sticky="w")
+        self.code_type = ttk.Combobox(control_frame, values=["GS1", "PPN"], width=10)
         self.code_type.grid(row=0, column=1)
         self.code_type.current(0)
 
-        pc_label = ttk.Label(self.root, text="Product Code (PC):")
-        pc_label.grid(row=1, column=0, sticky="w")
-        self.pc_entry = ttk.Entry(self.root)
-        self.pc_entry.grid(row=1, column=1)
+        # Etiquetas y entradas para los datos del código
+        pc_label = ttk.Label(control_frame, text="Product Code (PC):")
+        pc_label.grid(row=1, column=0, padx=(0, 10), pady=(10, 0), sticky="w")
+        self.pc_entry = ttk.Entry(control_frame)
+        self.pc_entry.grid(row=1, column=1, pady=(10, 0))
 
-        sn_label = ttk.Label(self.root, text="Serial Number (SN):")
-        sn_label.grid(row=2, column=0, sticky="w")
-        self.sn_entry = ttk.Entry(self.root)
-        self.sn_entry.grid(row=2, column=1)
+        sn_label = ttk.Label(control_frame, text="Serial Number (SN):")
+        sn_label.grid(row=2, column=0, padx=(0, 10), pady=(10, 0), sticky="w")
+        self.sn_entry = ttk.Entry(control_frame)
+        self.sn_entry.grid(row=2, column=1, pady=(10, 0))
 
-        lote_label = ttk.Label(self.root, text="Lote (Batch):")
-        lote_label.grid(row=3, column=0, sticky="w")
-        self.lote_entry = ttk.Entry(self.root)
-        self.lote_entry.grid(row=3, column=1)
+        lote_label = ttk.Label(control_frame, text="Lote (Batch):")
+        lote_label.grid(row=3, column=0, padx=(0, 10), pady=(10, 0), sticky="w")
+        self.lote_entry = ttk.Entry(control_frame)
+        self.lote_entry.grid(row=3, column=1, pady=(10, 0))
 
-        cad_label = ttk.Label(self.root, text="Exp Date (CAD):")
-        cad_label.grid(row=4, column=0, sticky="w")
-        self.cad_entry = ttk.Entry(self.root)
-        self.cad_entry.grid(row=4, column=1)
+        cad_label = ttk.Label(control_frame, text="Exp Date (CAD):")
+        cad_label.grid(row=4, column=0, padx=(0, 10), pady=(10, 0), sticky="w")
+        self.cad_entry = ttk.Entry(control_frame)
+        self.cad_entry.grid(row=4, column=1, pady=(10, 0))
 
-        nhrn_label = ttk.Label(self.root, text="National Code (NHRN):")
-        nhrn_label.grid(row=5, column=0, sticky="w")
-        self.nhrn_entry = ttk.Entry(self.root)
-        self.nhrn_entry.grid(row=5, column=1)
+        nhrn_label = ttk.Label(control_frame, text="National Code (NHRN):")
+        nhrn_label.grid(row=5, column=0, padx=(0, 10), pady=(10, 0), sticky="w")
+        self.nhrn_entry = ttk.Entry(control_frame)
+        self.nhrn_entry.grid(row=5, column=1, pady=(10, 0))
 
-        inverted_label = ttk.Label(self.root, text="Invert Data Matrix:")
-        inverted_label.grid(row=6, column=0, sticky="w")
+        # Checkbox para invertir el Data Matrix
         self.inverted_var = tk.BooleanVar()
-        inverted_checkbox = ttk.Checkbutton(self.root, variable=self.inverted_var)
-        inverted_checkbox.grid(row=6, column=1, sticky="w")
+        inverted_checkbox = ttk.Checkbutton(control_frame, text="Invert Data Matrix", variable=self.inverted_var)
+        inverted_checkbox.grid(row=6, column=0, columnspan=2, pady=(10, 0), sticky="w")
 
-        generate_button = ttk.Button(self.root, text="Generate", command=self.generate_and_display)
-        generate_button.grid(row=7, column=0, columnspan=4, pady=10)
-
-        download_button = ttk.Button(self.root, text="Download", command=self.download_datamatrix)
-        download_button.grid(row=8, column=0, columnspan=2, pady=10)
-
-        self.image_label = ttk.Label(self.root)
-        self.image_label.grid(row=9, column=0, columnspan=2)
+        # Checkbox para mantener siempre en primer plano
+        always_on_top_checkbox = ttk.Checkbutton(control_frame, text="Always on Top", variable=self.always_on_top_var, command=self.toggle_always_on_top)
+        always_on_top_checkbox.grid(row=7, column=0, columnspan=2, pady=(10, 0), sticky="w")
         
+        # Botones para generar y descargar el Data Matrix
+        generate_button = ttk.Button(control_frame, text="Generate", command=self.generate_and_display)
+        generate_button.grid(row=8, column=0, columnspan=2, pady=(10, 0), sticky="ew")
+
+        download_button = ttk.Button(control_frame, text="Download", command=self.download_datamatrix)
+        download_button.grid(row=9, column=0, columnspan=2, pady=(10, 0), sticky="ew")
+
+        # Etiqueta para mostrar la imagen del Data Matrix
+        self.image_label = ttk.Label(main_frame)
+        self.image_label.pack(pady=(20, 0))      
+    def toggle_always_on_top(self):
+        self.root.attributes("-topmost", self.always_on_top_var.get())
     def generate_and_display(self):
         pc = self.pc_entry.get()
         sn = self.sn_entry.get()
