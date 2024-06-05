@@ -19,20 +19,35 @@ def format_gs1_data(pc, sn, lote, cad, nhrn):
     }
     
     formatted_data = ""
+    if pc.startswith("0847000"):
+        ordered_data = [
+            ("PC", pc),
+            ("CAD", cad),
+            ("LOTE", lote),
+            ("SN", sn),
+            ("NHRN", nhrn)
+        ]
+        
+        for prefix, data in ordered_data:
+            if data:
+                if prefix == "SN" or prefix == "NHRN":
+                    formatted_data += GS
+                formatted_data += prefix_map[prefix] + data
     
-    ordered_data = [
-        ("PC", pc),
-        ("LOTE", lote),
-        ("CAD", cad),
-        ("SN", sn),
-        ("NHRN", nhrn)
-    ]
-    
-    for prefix, data in ordered_data:
-        if data:
-            if prefix not in ["LOTE", "SN"]:
-                formatted_data += GS
-            formatted_data += prefix_map[prefix] + data
+    else:
+        ordered_data = [
+            ("PC", pc),
+            ("LOTE", lote),
+            ("CAD", cad),
+            ("SN", sn),
+            ("NHRN", nhrn)
+        ]
+        
+        for prefix, data in ordered_data:
+            if data:
+                if prefix not in ["LOTE", "SN"]:
+                    formatted_data += GS
+                formatted_data += prefix_map[prefix] + data
     
     if formatted_data.startswith(GS):
         formatted_data = formatted_data[1:]
