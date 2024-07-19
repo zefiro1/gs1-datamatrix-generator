@@ -86,7 +86,7 @@ def generate_and_display_data_matrix(pc, sn, lote, cad, nhrn, code_type, image_l
         img = Image.open(filename)
     
     # Redimensionar la imagen a 200x200
-    img_resized = img.resize((200, 200), Image.ANTIALIAS)
+    img_resized = img.resize((200, 200), Image.Resampling.LANCZOS)
 
     # Mostrar la imagen en la GUI
     img_tk = ImageTk.PhotoImage(img_resized)
@@ -215,7 +215,7 @@ class DataMatrixApp:
         
         # Guardar el DataMatrix en la ubicación seleccionada
         if file_path:
-            img.save(file_path, format="PNG", dpi=(300, 300))
+            img.save(file_path, format="PNG", dpi=(800, 800))
 
         # Eliminar el archivo temporal
         os.remove(filename)
